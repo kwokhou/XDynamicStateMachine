@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XDynamicWorkflow", "XDynamicWorkflow\XDynamicWorkflow.csproj", "{E9D7C559-B4FF-4F69-97D2-DE5F9EF64F7E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XDynamicWorkflow.Tests", "..\tests\XDynamicWorkflow.Tests\XDynamicWorkflow.Tests.csproj", "{5ED0ECF2-BE01-46F0-8ECB-53E263689ACC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{E9D7C559-B4FF-4F69-97D2-DE5F9EF64F7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E9D7C559-B4FF-4F69-97D2-DE5F9EF64F7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E9D7C559-B4FF-4F69-97D2-DE5F9EF64F7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5ED0ECF2-BE01-46F0-8ECB-53E263689ACC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5ED0ECF2-BE01-46F0-8ECB-53E263689ACC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5ED0ECF2-BE01-46F0-8ECB-53E263689ACC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5ED0ECF2-BE01-46F0-8ECB-53E263689ACC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
