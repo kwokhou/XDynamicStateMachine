@@ -1,4 +1,4 @@
-XDynamicWorkflowEngine
+XDynamicStateMachine
 ======================
 
-Dynamic workflow engine in C#
+A simple implementation of dynamic state machine in C#
