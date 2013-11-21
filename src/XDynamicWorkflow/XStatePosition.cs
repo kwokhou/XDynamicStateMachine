@@ -10,6 +10,13 @@ namespace XDynamicWorkflow
 
         public XStatePosition(string currentState, string actor, string action)
         {
+            if (string.IsNullOrEmpty(currentState))
+                throw new ArgumentNullException("currentState");
+            if (string.IsNullOrEmpty(actor))
+                throw new ArgumentNullException("actor");
+            if (string.IsNullOrEmpty(action))
+                throw new ArgumentNullException("action");
+
             _state = currentState;
             _actor = actor;
             _action = action;

@@ -1,46 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
 
 namespace XDynamicWorkflow
 {
     public class XDynamicWorkflow
     {
-        readonly Dictionary<XStatePosition, string> _workflowDefinitions;
+        readonly Dictionary<XStatePosition, string> _workflows;
         public string CurrentState { get; set; }
 
-        public XDynamicWorkflow(Dictionary<XStatePosition, string> workflowDefinitionses, string initialState)
+        public XDynamicWorkflow(Dictionary<XStatePosition, string> workflows, string initialState)
         {
-            if (workflowDefinitionses == null || !workflowDefinitionses.Any())
-                throw new ArgumentNullException("workflowDefinitionses", "Missing Workflow definitions in constructor");
+            if (workflows == null || !workflows.Any())
+                throw new ArgumentNullException("workflows", "Missing Workflow definitions in constructor");
 
             if (string.IsNullOrEmpty(initialState))
                 throw new ArgumentNullException("initialState", "Missing initial workflow state");
 
             CurrentState = initialState;
-            _workflowDefinitions = workflowDefinitionses;
+            _workflows = workflows;
         }
 
-        private void FindNext(string actor, string action, Action<string> successAction, Action failAction)
+        private string FindNext(string state, string actor, string action)
         {
-            var position = new XStatePosition(this.CurrentState, actor, action);
+            var position = new XStatePosition(state, actor, action);
             string nextState;
-            if (!_workflowDefinitions.TryGetValue(position, out nextState))
-            {
-                if (failAction != null)
-                    failAction();
-            }
-            else
-            {
-                CurrentState = nextState;
-                if (successAction != null)
-                    successAction(nextState);
-            }
+            if (!_workflows.TryGetValue(position, out nextState))
+                throw new ArgumentException(string.Format("exInvalidStateAction:{0}>{1}>{2}", actor, this.CurrentState, action));
+            return nextState;
         }
 
-        public string MoveNext(string actor, string action, Action<string> successAction, Action failAction)
+        public string MoveNext(string actor, string action)
         {
-            FindNext(actor, action, successAction, failAction);
+            CurrentState = FindNext(CurrentState, actor, action);
             return CurrentState;
         }
     }
