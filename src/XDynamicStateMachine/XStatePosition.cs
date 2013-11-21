@@ -1,20 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace XDynamicStateMachine
 {
-    public class XStatePosition
+    public class XStatePosition<TState>
     {
-        readonly string _state;
+        readonly TState _state;
         readonly string _action;
         readonly string _actor;
 
-        public XStatePosition(string currentState, string actor, string action)
+        public XStatePosition(TState currentState, string actor, string action)
         {
-            if (string.IsNullOrEmpty(currentState))
+            if (EqualityComparer<TState>.Default.Equals(currentState, default(TState)))
                 throw new ArgumentNullException("currentState");
-            if (string.IsNullOrEmpty(actor))
+            if (EqualityComparer<string>.Default.Equals(actor, default(string)))
                 throw new ArgumentNullException("actor");
-            if (string.IsNullOrEmpty(action))
+            if (EqualityComparer<string>.Default.Equals(action, default(string)))
                 throw new ArgumentNullException("action");
 
             _state = currentState;
@@ -36,8 +37,11 @@ namespace XDynamicStateMachine
 
         public override bool Equals(object obj)
         {
-            var other = obj as XStatePosition;
-            return other != null && _state == other._state && _action == other._action && _actor == other._actor;
+            var other = obj as XStatePosition<TState>;
+            return 
+                other != null && 
+                EqualityComparer<TState>.Default.Equals(_state, other._state) &&
+                _action == other._action && _actor == other._actor;
         }
     }
 }

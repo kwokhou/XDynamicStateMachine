@@ -4,33 +4,33 @@ using System.Linq;
 
 namespace XDynamicStateMachine
 {
-    public class XDynamicStateMachine
+    public class XDynamicStateMachine<TState>
     {
-        readonly Dictionary<XStatePosition, string> _workflows;
-        public string CurrentState { get; set; }
+        readonly Dictionary<XStatePosition<TState>, TState> _workflows;
+        public TState CurrentState { get; set; }
 
-        public XDynamicStateMachine(Dictionary<XStatePosition, string> workflows, string initialState)
+        public XDynamicStateMachine(Dictionary<XStatePosition<TState>, TState> workflows, TState initialState)
         {
             if (workflows == null || !workflows.Any())
                 throw new ArgumentNullException("workflows", "Missing Workflow definitions in constructor");
 
-            if (string.IsNullOrEmpty(initialState))
+            if (EqualityComparer<TState>.Default.Equals(initialState, default(TState)))
                 throw new ArgumentNullException("initialState", "Missing initial workflow state");
 
             CurrentState = initialState;
             _workflows = workflows;
         }
 
-        private string FindNext(string state, string actor, string action)
+        private TState FindNext(TState state, string actor, string action)
         {
-            var position = new XStatePosition(state, actor, action);
-            string nextState;
+            var position = new XStatePosition<TState>(state, actor, action);
+            TState nextState;
             if (!_workflows.TryGetValue(position, out nextState))
-                throw new ArgumentException(string.Format("exInvalidStateAction:{0}>{1}>{2}", actor, this.CurrentState, action));
+                throw new ArgumentException(string.Format("exInvalidStateAction:{0}>{1}>{2}", actor, CurrentState, action));
             return nextState;
         }
 
-        public string MoveNext(string actor, string action)
+        public TState MoveNext(string actor, string action)
         {
             CurrentState = FindNext(CurrentState, actor, action);
             return CurrentState;
