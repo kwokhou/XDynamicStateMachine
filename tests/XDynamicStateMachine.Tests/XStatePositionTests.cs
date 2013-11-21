@@ -1,7 +1,7 @@
 ﻿using System;
 using Xunit;
 
-namespace XDynamicWorkflow.Tests
+namespace XDynamicStateMachine.Tests
 {
     public class XStatePositionTests
     {

@@ -6,8 +6,8 @@
     <ProjectGuid>{5ED0ECF2-BE01-46F0-8ECB-53E263689ACC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>XDynamicWorkflow.Tests</RootNamespace>
-    <AssemblyName>XDynamicWorkflow.Tests</AssemblyName>
+    <RootNamespace>XDynamicStateMachine.Tests</RootNamespace>
+    <AssemblyName>XDynamicStateMachine.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -52,14 +52,14 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="XDynamicWorkflowTests.cs" />
+    <Compile Include="XDynamicStateMachineTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XStatePositionTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\XDynamicWorkflow\XDynamicWorkflow.csproj">
+    <ProjectReference Include="..\..\src\XDynamicStateMachine\XDynamicStateMachine.csproj">
       <Project>{e9d7c559-b4ff-4f69-97d2-de5f9ef64f7e}</Project>
-      <Name>XDynamicWorkflow</Name>
+      <Name>XDynamicStateMachine</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

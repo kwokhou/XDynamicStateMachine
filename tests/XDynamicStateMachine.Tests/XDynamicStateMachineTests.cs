@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace XDynamicWorkflow.Tests
+namespace XDynamicStateMachine.Tests
 {
-    public class XDynamicWorkflowTests
+    public class XDynamicStateMachineTests
     {
         [Fact]
         public void Cannot_create_workflow_without_definitions()
         {
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new XDynamicWorkflow(null, "UNKNOWN"));
+                new global::XDynamicStateMachine.XDynamicStateMachine(null, "UNKNOWN"));
             Assert.NotNull(exception);
         }
 
@@ -18,7 +18,7 @@ namespace XDynamicWorkflow.Tests
         public void Cannot_create_workflow_with_empty_definitions()
         {
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new XDynamicWorkflow(new Dictionary<XStatePosition, string>(), "UNKNOWN"));
+                new global::XDynamicStateMachine.XDynamicStateMachine(new Dictionary<XStatePosition, string>(), "UNKNOWN"));
             Assert.NotNull(exception);
         }
 
@@ -33,7 +33,7 @@ namespace XDynamicWorkflow.Tests
             };
 
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new XDynamicWorkflow(sampleDefinition, null));
+                new global::XDynamicStateMachine.XDynamicStateMachine(sampleDefinition, null));
             Assert.NotNull(exception);
         }
 
@@ -47,7 +47,7 @@ namespace XDynamicWorkflow.Tests
                 {new XStatePosition("DRAFT", "REQUESTER", "SUBMIT FOR APPROVAL"), "PENDING"}
             };
 
-            var workflow = new XDynamicWorkflow(sampleDefinition, "DRAFT");
+            var workflow = new global::XDynamicStateMachine.XDynamicStateMachine(sampleDefinition, "DRAFT");
             Assert.Equal("DRAFT", workflow.CurrentState);
         }
 
@@ -62,7 +62,7 @@ namespace XDynamicWorkflow.Tests
                 {new XStatePosition("PENDING", "APPROVER", "APPROVE A REQUEST"), "APPROVE"}
             };
 
-            var stateMachine = new XDynamicWorkflow(simpleWorkflowDefinitions, "UNKNOWN");
+            var stateMachine = new global::XDynamicStateMachine.XDynamicStateMachine(simpleWorkflowDefinitions, "UNKNOWN");
             stateMachine.MoveNext("REQUESTER", "SUBMIT FOR APPROVAL");
 
             Assert.Equal("PENDING", stateMachine.CurrentState);
@@ -79,7 +79,7 @@ namespace XDynamicWorkflow.Tests
                 {new XStatePosition("PENDING", "APPROVER", "APPROVE A REQUEST"), "APPROVE"}
             };
 
-            var stateMachine = new XDynamicWorkflow(simpleWorkflowDefinitions, "UNKNOWN");
+            var stateMachine = new global::XDynamicStateMachine.XDynamicStateMachine(simpleWorkflowDefinitions, "UNKNOWN");
             stateMachine.MoveNext("REQUESTER", "SUBMIT FOR APPROVAL");
             stateMachine.MoveNext("APPROVER", "APPROVE A REQUEST");
 
@@ -97,7 +97,7 @@ namespace XDynamicWorkflow.Tests
                 {new XStatePosition("PENDING", "APPROVER", "APPROVE A REQUEST"), "APPROVE"}
             };
 
-            var stateMachine = new XDynamicWorkflow(simpleWorkflowDefinitions, "UNKNOWN");
+            var stateMachine = new global::XDynamicStateMachine.XDynamicStateMachine(simpleWorkflowDefinitions, "UNKNOWN");
             stateMachine.MoveNext("REQUESTER", "SUBMIT FOR APPROVAL"); // -> PENDING 
             stateMachine.MoveNext("APPROVER", "APPROVE A REQUEST"); // -> APPROVE
 

@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.ServiceModel;
 
-namespace XDynamicWorkflow
+namespace XDynamicStateMachine
 {
-    public class XDynamicWorkflow
+    public class XDynamicStateMachine
     {
         readonly Dictionary<XStatePosition, string> _workflows;
         public string CurrentState { get; set; }
 
-        public XDynamicWorkflow(Dictionary<XStatePosition, string> workflows, string initialState)
+        public XDynamicStateMachine(Dictionary<XStatePosition, string> workflows, string initialState)
         {
             if (workflows == null || !workflows.Any())
                 throw new ArgumentNullException("workflows", "Missing Workflow definitions in constructor");

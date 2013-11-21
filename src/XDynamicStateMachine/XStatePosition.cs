@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace XDynamicWorkflow
+namespace XDynamicStateMachine
 {
     public class XStatePosition
     {
