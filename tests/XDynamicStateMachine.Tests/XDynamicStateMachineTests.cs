@@ -1,11 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Ploeh.AutoFixture;
 using Xunit;
 
 namespace XDynamicStateMachine.Tests
 {
     public abstract class XDynamicStateMachineTests<TState, TActor, TAction>
     {
+        private Fixture fixture;
+
+        public XDynamicStateMachineTests()
+        {
+            fixture = new Fixture();
+        }
+
         [Fact]
         public void Cannot_create_workflow_without_definitions()
         {
@@ -28,111 +37,146 @@ namespace XDynamicStateMachine.Tests
         [Fact]
         public void Cannot_create_workflow_without_initialState()
         {
-            var sampleDefinition = new Dictionary<XStatePosition<string, string, string>, string>
-            {
-                {new XStatePosition<string, string, string>("UNKNOWN", "REQUESTER", "SAVE AS DRAFT"), "DRAFT"},
-                {new XStatePosition<string, string, string>("UNKNOWN", "REQUESTER", "SUBMIT FOR APPROVAL"), "PENDING"},
-                {new XStatePosition<string, string, string>("DRAFT", "REQUESTER", "SUBMIT FOR APPROVAL"), "PENDING"}
-            };
-
-            var exception = Assert.Throws<ArgumentNullException>(() => new XDynamicStateMachine<string, string, string>(sampleDefinition, null));
+            var sampleDefinition = SampleWorkflowDefinition();
+            var initialState = default(TState);
+            var exception = Assert.Throws<ArgumentNullException>(() => new XDynamicStateMachine<TState, TActor, TAction>(sampleDefinition, initialState));
             Assert.NotNull(exception);
         }
 
         [Fact]
         public void Can_create_workflow_with_initialize_state()
         {
-            var sampleDefinition = new Dictionary<XStatePosition<string, string, string>, string>
-            {
-                {new XStatePosition<string, string, string>("UNKNOWN", "REQUESTER", "SAVE AS DRAFT"), "DRAFT"},
-                {new XStatePosition<string, string, string>("UNKNOWN", "REQUESTER", "SUBMIT FOR APPROVAL"), "PENDING"},
-                {new XStatePosition<string, string, string>("DRAFT", "REQUESTER", "SUBMIT FOR APPROVAL"), "PENDING"}
-            };
-
-            var workflow = new XDynamicStateMachine<string, string, string>(sampleDefinition, "DRAFT");
-            Assert.Equal("DRAFT", workflow.CurrentState);
+            var sampleDefinition = SampleWorkflowDefinition();
+            var initialState = fixture.Create<TState>();
+            var workflow = new XDynamicStateMachine<TState, TActor, TAction>(sampleDefinition, initialState);
+            Assert.Equal(initialState, workflow.CurrentState);
         }
 
         [Fact]
         public void Can_transition_a_workflow()
         {
-            var simpleWorkflowDefinitions = new Dictionary<XStatePosition<string, string, string>, string>
+            var stateUnknown = fixture.Create<TState>();
+            var stateDraft = fixture.Create<TState>();
+            var statePending = fixture.Create<TState>();
+            var stateApproved = fixture.Create<TState>();
+            var stateRejected = fixture.Create<TState>();
+
+            var actorCreator = fixture.Create<TActor>();
+            var actorApprover = fixture.Create<TActor>();
+
+            var actionSave = fixture.Create<TAction>();
+            var actionSubmit = fixture.Create<TAction>();
+            var actionApprove = fixture.Create<TAction>();
+            var actionReject = fixture.Create<TAction>();
+
+            var sampleDefinition = new Dictionary<XStatePosition<TState, TActor, TAction>, TState>
             {
-                {new XStatePosition<string, string, string>("UNKNOWN", "REQUESTER", "SAVE AS DRAFT"), "DRAFT"},
-                {new XStatePosition<string, string, string>("UNKNOWN", "REQUESTER", "SUBMIT FOR APPROVAL"), "PENDING"},
-                {new XStatePosition<string, string, string>("DRAFT", "REQUESTER", "SUBMIT FOR APPROVAL"), "PENDING"},
-                {new XStatePosition<string, string, string>("PENDING", "APPROVER", "APPROVE A REQUEST"), "APPROVE"}
+                {new XStatePosition<TState, TActor, TAction>(stateUnknown, actorCreator, actionSave), stateDraft},
+                {new XStatePosition<TState, TActor, TAction>(stateUnknown, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(stateDraft, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(stateRejected, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(statePending, actorApprover, actionApprove), stateApproved},
+                {new XStatePosition<TState, TActor, TAction>(statePending, actorApprover, actionReject), stateRejected},
             };
 
-            var stateMachine = new XDynamicStateMachine<string, string, string>(simpleWorkflowDefinitions, "UNKNOWN");
-            stateMachine.MoveNext("REQUESTER", "SUBMIT FOR APPROVAL");
+            var stateMachine = new XDynamicStateMachine<TState, TActor, TAction>(sampleDefinition, stateUnknown);
+            stateMachine.MoveNext(actorCreator, actionSave);
+            stateMachine.MoveNext(actorCreator, actionSubmit);
+            stateMachine.MoveNext(actorApprover, actionReject);
+            Assert.Equal(stateRejected, stateMachine.CurrentState);
 
-            Assert.Equal("PENDING", stateMachine.CurrentState);
-        }
-
-        [Fact]
-        public void Can_transition_a_workflow_to_2nd_level()
-        {
-            var simpleWorkflowDefinitions = new Dictionary<XStatePosition<string, string, string>, string>
-            {
-                {new XStatePosition<string, string, string>("UNKNOWN", "REQUESTER", "SAVE AS DRAFT"), "DRAFT"},
-                {new XStatePosition<string, string, string>("UNKNOWN", "REQUESTER", "SUBMIT FOR APPROVAL"), "PENDING"},
-                {new XStatePosition<string, string, string>("DRAFT", "REQUESTER", "SUBMIT FOR APPROVAL"), "PENDING"},
-                {new XStatePosition<string, string, string>("PENDING", "APPROVER", "APPROVE A REQUEST"), "APPROVE"}
-            };
-
-            var stateMachine = new XDynamicStateMachine<string, string, string>(simpleWorkflowDefinitions, "UNKNOWN");
-            stateMachine.MoveNext("REQUESTER", "SUBMIT FOR APPROVAL");
-            stateMachine.MoveNext("APPROVER", "APPROVE A REQUEST");
-
-            Assert.Equal("APPROVE", stateMachine.CurrentState);
-        }
-        
-        [Fact]
-        public void Can_transition_a_workflow_with_integer_state()
-        {
-            var simpleWorkflowDefinitions = new Dictionary<XStatePosition<int, int, string>, int>
-            {
-                {new XStatePosition<int, int, string>(1, 100, "SAVE AS DRAFT"), 2 },
-                {new XStatePosition<int, int, string>(2, 100, "SUBMIT FOR APPROVAL"), 4},
-                {new XStatePosition<int, int, string>(4, 200, "APPROVE A REQUEST"), 8}
-            };
-
-            var stateMachine = new XDynamicStateMachine<int, int, string>(simpleWorkflowDefinitions, 1);
-            stateMachine.MoveNext(100, "SAVE AS DRAFT");
-            stateMachine.MoveNext(100, "SUBMIT FOR APPROVAL");
-            stateMachine.MoveNext(200, "APPROVE A REQUEST");
-
-            Assert.Equal(8, stateMachine.CurrentState);
+            stateMachine.MoveNext(actorCreator, actionSubmit);
+            Assert.Equal(statePending, stateMachine.CurrentState);
         }
 
         [Fact]
         public void Cannot_transition_to_an_undefined_flow_state()
         {
-            var simpleWorkflowDefinitions = new Dictionary<XStatePosition<string, string, string>, string>
+            var stateUnknown = fixture.Create<TState>();
+            var stateDraft = fixture.Create<TState>();
+            var statePending = fixture.Create<TState>();
+            var stateApproved = fixture.Create<TState>();
+            var stateRejected = fixture.Create<TState>();
+
+            var actorCreator = fixture.Create<TActor>();
+            var actorApprover = fixture.Create<TActor>();
+
+            var actionSave = fixture.Create<TAction>();
+            var actionSubmit = fixture.Create<TAction>();
+            var actionApprove = fixture.Create<TAction>();
+            var actionReject = fixture.Create<TAction>();
+
+            var sampleDefinition = new Dictionary<XStatePosition<TState, TActor, TAction>, TState>
             {
-                {new XStatePosition<string, string, string>("UNKNOWN", "REQUESTER", "SAVE AS DRAFT"), "DRAFT"},
-                {new XStatePosition<string, string, string>("UNKNOWN", "REQUESTER", "SUBMIT FOR APPROVAL"), "PENDING"},
-                {new XStatePosition<string, string, string>("DRAFT", "REQUESTER", "SUBMIT FOR APPROVAL"), "PENDING"},
-                {new XStatePosition<string, string, string>("PENDING", "APPROVER", "APPROVE A REQUEST"), "APPROVE"}
+                {new XStatePosition<TState, TActor, TAction>(stateUnknown, actorCreator, actionSave), stateDraft},
+                {new XStatePosition<TState, TActor, TAction>(stateUnknown, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(stateDraft, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(stateRejected, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(statePending, actorApprover, actionApprove), stateApproved},
+                {new XStatePosition<TState, TActor, TAction>(statePending, actorApprover, actionReject), stateRejected},
             };
 
-            var stateMachine = new XDynamicStateMachine<string, string, string>(simpleWorkflowDefinitions, "UNKNOWN");
-            stateMachine.MoveNext("REQUESTER", "SUBMIT FOR APPROVAL"); // -> PENDING 
-            stateMachine.MoveNext("APPROVER", "APPROVE A REQUEST"); // -> APPROVE
+            var stateMachine = new XDynamicStateMachine<TState, TActor, TAction>(sampleDefinition, stateUnknown);
+            stateMachine.MoveNext(actorCreator, actionSubmit); // -> PENDING 
+            stateMachine.MoveNext(actorApprover, actionApprove); // -> APPROVE
+            Assert.Equal(stateApproved, stateMachine.CurrentState);
 
             Assert.Throws<ArgumentException>(() =>
             {
-                stateMachine.MoveNext("APPROVER", "REJECT A REQUEST"); // undefined action
+                stateMachine.MoveNext(actorApprover, actionSave); // undefined workflow action
             });
+        }
+
+        public Dictionary<XStatePosition<TState, TActor, TAction>, TState> SampleWorkflowDefinition()
+        {
+            var stateUnknown = fixture.Create<TState>();
+            var stateDraft = fixture.Create<TState>();
+            var statePending = fixture.Create<TState>();
+            var stateApproved = fixture.Create<TState>();
+            var stateRejected = fixture.Create<TState>();
+
+            var actorCreator = fixture.Create<TActor>();
+            var actorApprover = fixture.Create<TActor>();
+
+            var actionSave = fixture.Create<TAction>();
+            var actionSubmit = fixture.Create<TAction>();
+            var actionApprove = fixture.Create<TAction>();
+            var actionReject = fixture.Create<TAction>();
+
+            var sampleDefinition = new Dictionary<XStatePosition<TState, TActor, TAction>, TState>
+            {
+                {new XStatePosition<TState, TActor, TAction>(stateUnknown, actorCreator, actionSave), stateDraft},
+                {new XStatePosition<TState, TActor, TAction>(stateUnknown, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(stateDraft, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(stateRejected, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(statePending, actorApprover, actionApprove), stateApproved},
+                {new XStatePosition<TState, TActor, TAction>(statePending, actorApprover, actionReject), stateRejected},
+            };
+
+            return sampleDefinition;
         }
     }
 
-    public class StringXDynamicStateMachineTests : XDynamicStateMachineTests<string, string, double>
+    public enum SampleEnumActor
+    {
+        Creator = 100,
+        Approver = 200
+    }
+
+    public enum SampleEnumState
+    {
+        Unknown = 1,
+        Request = 2,
+        Submit = 3,
+        Reject = 4,
+        Approved = 5
+    }
+
+    public class IntegerXDynamicStateMachineTests : XDynamicStateMachineTests<SampleEnumState, SampleEnumActor, string>
     {
     }
 
-    public class IntegerXDynamicStateMachineTests : XDynamicStateMachineTests<int, string, string>
+    public class StringXDynamicStateMachineTests : XDynamicStateMachineTests<char, string, double>
     {
     }
 

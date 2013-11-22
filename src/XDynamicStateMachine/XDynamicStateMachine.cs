@@ -7,7 +7,7 @@ namespace XDynamicStateMachine
     public class XDynamicStateMachine<TState, TActor, TAction>
     {
         readonly Dictionary<XStatePosition<TState, TActor, TAction>, TState> _workflows;
-        public TState CurrentState { get; set; }
+        public TState CurrentState { get; private set; }
 
         public XDynamicStateMachine(Dictionary<XStatePosition<TState, TActor, TAction>, TState> workflows, TState initialState)
         {
