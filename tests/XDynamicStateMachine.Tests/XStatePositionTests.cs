@@ -6,7 +6,7 @@ using Xunit.Sdk;
 
 namespace XDynamicStateMachine.Tests
 {
-    public abstract class XStatePositionTests<TState>
+    public abstract class XStatePositionTests<TState, TActor>
     {
         private Fixture fixture;
 
@@ -18,10 +18,10 @@ namespace XDynamicStateMachine.Tests
         [Fact]
         public void Cannot_create_state_position_with_null_state()
         {
-            XStatePosition<TState> state = null;
+            XStatePosition<TState, TActor> state = null;
             Assert.Throws<ArgumentNullException>(() =>
             {
-                state = new XStatePosition<TState>(default(TState), "REQUESTER", null);
+                state = new XStatePosition<TState, TActor>(default(TState), fixture.Create<TActor>(), null);
             });
 
             Assert.Null(state);
@@ -30,10 +30,10 @@ namespace XDynamicStateMachine.Tests
         [Fact]
         public void Cannot_create_state_position_with_null_actor()
         {
-            XStatePosition<TState> state = null;
+            XStatePosition<TState, TActor> state = null;
             Assert.Throws<ArgumentNullException>(() =>
             {
-                state = new XStatePosition<TState>(fixture.Create<TState>(), null, fixture.Create<string>());
+                state = new XStatePosition<TState, TActor>(fixture.Create<TState>(), default(TActor), fixture.Create<string>());
             });
 
             Assert.Null(state);
@@ -42,10 +42,10 @@ namespace XDynamicStateMachine.Tests
         [Fact]
         public void Cannot_create_state_position_with_null_action()
         {
-            XStatePosition<TState> state = null;
+            XStatePosition<TState, TActor> state = null;
             Assert.Throws<ArgumentNullException>(() =>
             {
-                state = new XStatePosition<TState>(fixture.Create<TState>(), fixture.Create<string>(), null);
+                state = new XStatePosition<TState, TActor>(fixture.Create<TState>(), fixture.Create<TActor>(), null);
             });
 
             Assert.Null(state);
@@ -55,11 +55,11 @@ namespace XDynamicStateMachine.Tests
         public void Can_campare_state_position_with_equal_value()
         {
             var state1 = fixture.Create<TState>();
-            var actor = fixture.Create<string>();
+            var actor = fixture.Create<TActor>();
             var action = fixture.Create<string>();
 
-            var stateBuy1 = new XStatePosition<TState>(state1, actor, action);
-            var stateBuy2 = new XStatePosition<TState>(state1, actor, action);
+            var stateBuy1 = new XStatePosition<TState, TActor>(state1, actor, action);
+            var stateBuy2 = new XStatePosition<TState, TActor>(state1, actor, action);
 
             Assert.Equal(stateBuy1, stateBuy2);
         }
@@ -67,8 +67,8 @@ namespace XDynamicStateMachine.Tests
         [Fact]
         public void Can_campare_state_position_with_inequal_value()
         {
-            var stateBuy1 = new XStatePosition<TState>(fixture.Create<TState>(), "buyer", "buynow");
-            XStatePosition<TState> stateBuy2 = null;
+            var stateBuy1 = new XStatePosition<TState, TActor>(fixture.Create<TState>(),fixture.Create<TActor>(), "buynow");
+            XStatePosition<TState, TActor> stateBuy2 = null;
 
             Assert.NotEqual(stateBuy1, stateBuy2);
         }
@@ -77,12 +77,12 @@ namespace XDynamicStateMachine.Tests
         public void Can_campare_state_position_with_inequal_actor()
         {
             var state1 = fixture.Create<TState>();
-            var actor1 = fixture.Create<string>();
-            var actor2 = fixture.Create<string>();
+            var actor1 = fixture.Create<TActor>();
+            var actor2 = fixture.Create<TActor>();
             var action = fixture.Create<string>();
 
-            var stateBuy1 = new XStatePosition<TState>(state1, actor1, action);
-            var stateBuy2 = new XStatePosition<TState>(state1, actor2, action);
+            var stateBuy1 = new XStatePosition<TState, TActor>(state1, actor1, action);
+            var stateBuy2 = new XStatePosition<TState, TActor>(state1, actor2, action);
 
             Assert.NotEqual(stateBuy1, stateBuy2);
         }
@@ -91,12 +91,12 @@ namespace XDynamicStateMachine.Tests
         public void Can_campare_state_position_with_inequal_action()
         {
             var state1 = fixture.Create<TState>();
-            var actor = fixture.Create<string>();
+            var actor = fixture.Create<TActor>();
             var action1 = fixture.Create<string>();
             var action2 = fixture.Create<string>();
 
-            var stateBuy1 = new XStatePosition<TState>(state1, actor, action1);
-            var stateBuy2 = new XStatePosition<TState>(state1, actor, action2);
+            var stateBuy1 = new XStatePosition<TState, TActor>(state1, actor, action1);
+            var stateBuy2 = new XStatePosition<TState, TActor>(state1, actor, action2);
 
             Assert.NotEqual(stateBuy1, stateBuy2);
         }
@@ -106,17 +106,17 @@ namespace XDynamicStateMachine.Tests
         {
             var state1 = fixture.Create<TState>();
             var state2 = fixture.Create<TState>();
-            var actor = fixture.Create<string>();
+            var actor = fixture.Create<TActor>();
             var action = fixture.Create<string>();
 
-            var stateBuy1 = new XStatePosition<TState>(state1,actor,action);
-            var stateBuy2 = new XStatePosition<TState>(state2,actor,action);
+            var stateBuy1 = new XStatePosition<TState, TActor>(state1,actor,action);
+            var stateBuy2 = new XStatePosition<TState, TActor>(state2,actor,action);
 
             Assert.NotEqual(stateBuy1, stateBuy2);
         }
     }
 
-    public class StringXStatePositionTests : XStatePositionTests<string> { }
-    public class IntegerXStatePositionTests : XStatePositionTests<int> { }
-    public class DecimalXStatePositionTests : XStatePositionTests<decimal> { }
+    public class StringXStatePositionTests : XStatePositionTests<string, int> { }
+    public class IntegerXStatePositionTests : XStatePositionTests<int, decimal> { }
+    public class DecimalXStatePositionTests : XStatePositionTests<decimal, string> { }
 }
