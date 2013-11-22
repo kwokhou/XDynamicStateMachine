@@ -4,12 +4,12 @@ using System.Linq;
 
 namespace XDynamicStateMachine
 {
-    public class XDynamicStateMachine<TState, TActor>
+    public class XDynamicStateMachine<TState, TActor, TAction>
     {
-        readonly Dictionary<XStatePosition<TState, TActor>, TState> _workflows;
+        readonly Dictionary<XStatePosition<TState, TActor, TAction>, TState> _workflows;
         public TState CurrentState { get; set; }
 
-        public XDynamicStateMachine(Dictionary<XStatePosition<TState, TActor>, TState> workflows, TState initialState)
+        public XDynamicStateMachine(Dictionary<XStatePosition<TState, TActor, TAction>, TState> workflows, TState initialState)
         {
             if (workflows == null || !workflows.Any())
                 throw new ArgumentNullException("workflows", "Missing Workflow definitions in constructor");
@@ -21,16 +21,16 @@ namespace XDynamicStateMachine
             _workflows = workflows;
         }
 
-        private TState FindNext(TState state, TActor actor, string action)
+        private TState FindNext(TState state, TActor actor, TAction action)
         {
-            var position = new XStatePosition<TState, TActor>(state, actor, action);
+            var position = new XStatePosition<TState, TActor, TAction>(state, actor, action);
             TState nextState;
             if (!_workflows.TryGetValue(position, out nextState))
                 throw new ArgumentException(string.Format("exInvalidStateAction:{0}>{1}>{2}", actor, CurrentState, action));
             return nextState;
         }
 
-        public TState MoveNext(TActor actor, string action)
+        public TState MoveNext(TActor actor, TAction action)
         {
             CurrentState = FindNext(CurrentState, actor, action);
             return CurrentState;
