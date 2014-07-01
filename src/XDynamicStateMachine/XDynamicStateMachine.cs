@@ -26,7 +26,7 @@ namespace XDynamicStateMachine
             var position = new XStatePosition<TState, TActor, TAction>(state, actor, action);
             TState nextState;
             if (!_workflows.TryGetValue(position, out nextState))
-                throw new ArgumentException(string.Format("exInvalidStateAction:{0}>{1}>{2}", actor, CurrentState, action));
+                throw new ArgumentException(string.Format("exInvalidStateAction:{0}>>{1}>>{2}", CurrentState, actor, action));
             return nextState;
         }
 
