@@ -30,6 +30,13 @@ namespace XDynamicStateMachine
             return nextState;
         }
 
+        public bool CanMoveNext(TActor actor, TAction action)
+        {
+            var position = new XStatePosition<TState, TActor, TAction>(CurrentState, actor, action);
+            TState nextState;
+            return _workflows.TryGetValue(position, out nextState);
+        }
+
         public TState MoveNext(TActor actor, TAction action)
         {
             CurrentState = FindNext(CurrentState, actor, action);

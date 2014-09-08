@@ -127,6 +127,71 @@ namespace XDynamicStateMachine.Tests
             });
         }
 
+        [Fact]
+        public void Can_check_if_StateMachine_are_able_to_transition_to_a_State()
+        {
+            var stateUnknown = fixture.Create<TState>();
+            var stateDraft = fixture.Create<TState>();
+            var statePending = fixture.Create<TState>();
+            var stateApproved = fixture.Create<TState>();
+            var stateRejected = fixture.Create<TState>();
+
+            var actorCreator = fixture.Create<TActor>();
+            var actorApprover = fixture.Create<TActor>();
+
+            var actionSave = fixture.Create<TAction>();
+            var actionSubmit = fixture.Create<TAction>();
+            var actionApprove = fixture.Create<TAction>();
+            var actionReject = fixture.Create<TAction>();
+
+            var sampleDefinition = new Dictionary<XStatePosition<TState, TActor, TAction>, TState>
+            {
+                {new XStatePosition<TState, TActor, TAction>(stateUnknown, actorCreator, actionSave), stateDraft},
+                {new XStatePosition<TState, TActor, TAction>(stateUnknown, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(stateDraft, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(stateRejected, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(statePending, actorApprover, actionApprove), stateApproved},
+                {new XStatePosition<TState, TActor, TAction>(statePending, actorApprover, actionReject), stateRejected},
+            };
+
+            var stateMachine = new XDynamicStateMachine<TState, TActor, TAction>(sampleDefinition, stateUnknown);
+            var result = stateMachine.CanMoveNext(actorCreator, actionSubmit); // -> PENDING 
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void Can_check_if_StateMachine_are_not_able_to_transition_to_a_State()
+        {
+            var stateUnknown = fixture.Create<TState>();
+            var stateDraft = fixture.Create<TState>();
+            var statePending = fixture.Create<TState>();
+            var stateApproved = fixture.Create<TState>();
+            var stateRejected = fixture.Create<TState>();
+
+            var actorCreator = fixture.Create<TActor>();
+            var actorApprover = fixture.Create<TActor>();
+
+            var actionSave = fixture.Create<TAction>();
+            var actionSubmit = fixture.Create<TAction>();
+            var actionApprove = fixture.Create<TAction>();
+            var actionReject = fixture.Create<TAction>();
+
+            var sampleDefinition = new Dictionary<XStatePosition<TState, TActor, TAction>, TState>
+            {
+                {new XStatePosition<TState, TActor, TAction>(stateUnknown, actorCreator, actionSave), stateDraft},
+                {new XStatePosition<TState, TActor, TAction>(stateUnknown, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(stateDraft, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(stateRejected, actorCreator, actionSubmit), statePending},
+                {new XStatePosition<TState, TActor, TAction>(statePending, actorApprover, actionApprove), stateApproved},
+                {new XStatePosition<TState, TActor, TAction>(statePending, actorApprover, actionReject), stateRejected},
+            };
+
+            var stateMachine = new XDynamicStateMachine<TState, TActor, TAction>(sampleDefinition, stateDraft);
+            var result = stateMachine.CanMoveNext(actorCreator, actionReject);
+
+            Assert.False(result);
+        }
+
         public Dictionary<XStatePosition<TState, TActor, TAction>, TState> SampleWorkflowDefinition()
         {
             var stateUnknown = fixture.Create<TState>();
